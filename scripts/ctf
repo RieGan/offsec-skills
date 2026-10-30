@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Run a command inside the repo's CTF venv (creates it first if missing).
+# Usage: scripts/ctf python solve.py | scripts/ctf python -m pwntools ...
+set -euo pipefail
+root="$(cd "$(dirname "$0")/.." && pwd)"
+if [ ! -x "$root/.venv/bin/python" ]; then
+    "$root/scripts/setup.sh" >&2
+fi
+export PATH="$root/.venv/bin:$PATH"
+exec "$@"
