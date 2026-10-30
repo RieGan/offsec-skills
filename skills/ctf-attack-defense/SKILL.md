@@ -93,6 +93,7 @@ defense weight rises as public exploits spread (details: `references/runbook.md`
 
 ## References
 
+- repo `docs/attack-defense/README.md` — human team playbooks (3-person: beginner / intermediate / expert) + gap analysis; agent-facing docs above, people-facing docs there
 - `references/runbook.md` — prep, team roles, first hour gates, per-tick rhythm, endgame
 - `references/defense.md` — patch doctrine, per-language quick patches, binary patching, deploy/rollback, hardening
 - `references/offense.md` — flag ids, attack loop, farm module contract, traffic mining, submission pacing
