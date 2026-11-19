@@ -93,7 +93,7 @@ distrobox-export --app burpsuite                                        # GUI ap
   place credentials live), but assume anything in $HOME is reachable from inside.
 - Use `--unshared` (`distrobox create --unshared`) when the box should NOT see
   host home — then mount only the repo dir explicitly.
-- Tear down: `distrobox rm offsec` (+ `podman image rm docker.io/kalilinux/kali-rolling`).
+- Optional teardown: `distrobox rm offsec` (+ `podman image rm docker.io/kalilinux/kali-rolling`). Keeping the box costs disk only.
 - toolbox (`sudo pacman -S toolbox`): same idea, Arch-native image; fine for
   host-distro tooling, distrobox wins when you need Kali/Debian packages.
 
@@ -108,9 +108,25 @@ by the agent + shell; a persistent distrobox gives the same isolation with less
 machinery. If a repo ships `.devcontainer/` anyway, `podman compose` or
 `devcontainer` CLI against podman works, but don't add one for this suite.
 
-## Cleanup + hygiene
+## Lifecycle — nothing to uninstall
 
-- One-off images pile up: `podman image prune` after engagements; record image
-  digests used in the report (methodology section).
-- `.venv` (tier 0) is disposable: `rm -rf .venv && scripts/setup.sh` rebuilds it.
+Dormant tooling is inert: no autostart, no services — disk is the only cost.
+Default is keep everything; removal, when wanted, is wholesale per layer, never
+per-tool `pacman -R` archaeology:
+
+| Layer | Holds | Optional wholesale removal |
+|---|---|---|
+| `.venv` | every Python tool (pwntools, impacket, netexec, certipy...) | `rm -rf .venv` — `scripts/setup.sh` rebuilds |
+| podman images | scanners, go tools, sandbox images | `podman image prune` (dangling) or `podman image rm <img>` |
+| distrobox `offsec` | the whole apt stack (msf, burp, seclists) | `distrobox rm offsec` — host untouched |
+
+- Host pacman installs are the one exception: they persist until removed by
+  hand. Skill toolbox rows list host installs for convenience; the decision
+  rule is — host only what you use day-to-day (nmap, gdb, file, rlwrap), park
+  event-only heavyweights (sagemath, metasploit, hashcat) in tier 2 so the
+  event ends with `distrobox rm` … or nothing.
+- `work/<eng>/` workspaces stay until you delete them. For pentest engagements
+  only the contractual client-data destruction clause forces deletion of raw
+  loot/creds — on the contract's schedule, not as post-event housekeeping.
+- Record image digests used in the report (methodology section).
 - Never bake client data, creds, or engagement artifacts into images.
