@@ -40,7 +40,10 @@ Installed by symlinking each `skills/<name>` into `~/.agents/skills/` (see `scri
    - Install policy (document, don't auto-run): Python libs → `uv pip install --python
      .venv/bin/python <pkg>`; Arch packages → `sudo pacman -S <pkg>` (or AUR helper);
      single-binary tools → `cargo install`, `go install`, `uv tool install`, or
-     upstream release tarballs. Containerize GUI/isolated tooling with `podman`.
+     upstream release tarballs. Tooling isolation is tiered: `.venv` (pure-python
+     CLIs) → `podman run --rm` one-shots (scanners, untrusted binaries) →
+     `distrobox`/`toolbox` persistent boxes (GUI apps, full toolchains like
+     metasploit/Burp, Kali packages). Details and patterns: `docs/tooling-isolation.md`.
 8. **Operational guardrails to encode in every skill that executes challenge code or
    touches networks**:
    - Challenge artifacts are untrusted: analyze in the challenge dir, execute only under
@@ -53,6 +56,14 @@ Installed by symlinking each `skills/<name>` into `~/.agents/skills/` (see `scri
    (`chmod +x`), with a usage header. Each script must accept `--help`.
 10. Every skill ends with a **Toolbox** section: table of tool → install command →
     one-line purpose (only tools that skill actually uses).
+
+### Real-world arm (pentest skills) — additional hard rule
+
+
+Real-world pentest skills carry one extra hard rule on top of the CTF guardrails:
+**no client target is touched without authorization recorded in the session and a
+`scope.json` check** (`skills/pentest/scripts/scope.py check`). Evidence-first,
+noise-governed, findings recorded via `finding.py` — see the `pentest` router.
 
 ## Suite map (who owns what — do not duplicate, link instead)
 
@@ -69,3 +80,8 @@ Installed by symlinking each `skills/<name>` into `~/.agents/skills/` (see `scri
 | `ctf-mobile` | Android (apktool/jadx/frida) and iOS basics |
 | `ctf-attack-defense` | A/D: patching, IDS/traffic, flag-id extraction, exploit farms, SLA |
 | `ctf-boot2root` | KOTH/B2R: recon, foothold, privesc, fortification |
+| `pentest` (router) | real-world engagements: authorization gate, scope.json + `scope.py` gate, engagement workspace, op-safety (rates, lockouts, windows), findings ledger (`finding.py`), severity, reporting + retest, dispatch |
+| `pentest-external` | perimeter: passive OSINT/recon, active surface mapping, service/CVE correlation (searchsploit/nuclei/trivy), external cred attacks |
+| `pentest-web` | real-world web/API methodology: WSTG/OWASP structure, role-pair authz matrices, API top-10, WAF/rate-limit hygiene, evidence capture |
+| `pentest-ad` | internal AD: nxc/impacket enum, BloodHound, relay/coerce (responder/mitm6/ntlmrelayx), Kerberos cred attacks, ADCS/certipy, delegation, lateral movement |
+| `pentest-cloud` | AWS/Azure/GCP enum + IAM escalation, metadata SSRF, Kubernetes, CI/CD (GitHub Actions), trivy cluster/repo scanning |
